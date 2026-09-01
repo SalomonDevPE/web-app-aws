@@ -1,0 +1,174 @@
+<div
+    class="modal fade upload-modal"
+    id="uploadModal"
+    tabindex="-1"
+    aria-hidden="true"
+>
+
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+
+        <div class="modal-content">
+
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h5 class="modal-title">
+
+                        <i class="bi bi-cloud-arrow-up me-2 text-primary"></i>
+
+                        Subir archivos
+
+                    </h5>
+
+
+                    <div class="small text-muted">
+
+                        Agrega archivos a tu almacenamiento CloudBox.
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                ></button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+
+                <div
+                    id="uploadDropZone"
+                    class="upload-drop-zone"
+                >
+
+                    <i class="bi bi-cloud-arrow-up"></i>
+
+
+                    <h6>
+                        Arrastra tus archivos aquí
+                    </h6>
+
+
+                    <p>
+                        o haz clic para seleccionarlos desde tu dispositivo
+                    </p>
+
+
+                    <div class="upload-limit">
+
+                        Máximo 100 MB por archivo ·
+                        Puedes seleccionar varios archivos
+
+                    </div>
+
+                </div>
+
+
+                <input
+                    type="file"
+                    id="fileInput"
+                    multiple
+                    hidden
+                >
+
+
+                <div
+                    id="uploadFilesSection"
+                    style="display:none;"
+                >
+
+                    <div class="upload-files-header">
+
+                        <h6>
+                            Archivos seleccionados
+                        </h6>
+
+
+                        <button
+                            id="clearFilesButton"
+                            type="button"
+                            class="btn btn-sm btn-outline-danger"
+                        >
+
+                            <i class="bi bi-trash3 me-1"></i>
+
+                            Limpiar
+
+                        </button>
+
+                    </div>
+
+
+                    <div
+                        id="uploadFileList"
+                        class="upload-file-list"
+                    ></div>
+
+
+                    <div class="upload-summary">
+
+                        <span>
+
+                            <strong id="uploadCount">
+                                0
+                            </strong>
+
+                            archivos
+
+                        </span>
+
+
+                        <span>
+
+                            <strong id="uploadSize">
+                                0 B
+                            </strong>
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    data-bs-dismiss="modal"
+                >
+                    Cancelar
+                </button>
+
+
+                <button
+                    id="startUploadButton"
+                    type="button"
+                    class="btn btn-sm btn-cloud"
+                    disabled
+                >
+
+                    <i class="bi bi-cloud-upload me-1"></i>
+
+                    Subir archivos
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

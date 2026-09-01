@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>CloudBox · Mis archivos</title>
+
+
+    <!-- =====================================================
+         ADMINLTE 4
+    ====================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0/dist/css/adminlte.min.css"
+    >
+
+
+    <!-- =====================================================
+         BOOTSTRAP ICONS
+    ====================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    >
+
+
+    <!-- =====================================================
+         CLOUDBOX CSS
+    ====================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="css/cloudbox.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/dashboard.css"
+    >
+
+
+    <!-- =====================================================
+         TEMA
+    ====================================================== -->
+
+    <script>
+
+        const savedTheme =
+            localStorage.getItem("cloudbox-theme") ||
+            "light";
+
+        document.documentElement.setAttribute(
+            "data-bs-theme",
+            savedTheme
+        );
+
+    </script>
+
+</head>
+
+
+<body class="layout-fixed sidebar-expand-lg">
+
+
+<div class="app-wrapper">
+
+
+<!-- =====================================================
+     HEADER
+====================================================== -->
+
+<nav class="app-header navbar navbar-expand">
+
+    <div class="container-fluid">
+
+
+        <ul class="navbar-nav">
+
+            <li class="nav-item">
+
+                <a
+                    class="nav-link"
+                    data-lte-toggle="sidebar"
+                    href="#"
+                >
+
+                    <i class="bi bi-list fs-5"></i>
+
+                </a>
+
+            </li>
+
+        </ul>
+
+
+        <!-- BUSCADOR -->
+
+        <form class="cloud-search ms-3">
+
+            <div class="input-group input-group-sm">
+
+                <span class="input-group-text">
+
+                    <i class="bi bi-search"></i>
+
+                </span>
+
+
+                <input
+                    type="search"
+                    id="globalSearch"
+                    class="form-control"
+                    placeholder="Buscar archivos y carpetas..."
+                >
+
+            </div>
+
+        </form>
+
+
+        <!-- HEADER RIGHT -->
+
+        <ul class="navbar-nav ms-auto align-items-center">
+
+
+            <!-- TEMA -->
+
+            <li class="nav-item me-1">
+
+                <button
+                    id="themeToggle"
+                    class="theme-toggle"
+                    type="button"
+                    title="Cambiar tema"
+                >
+
+                    <i
+                        id="themeIcon"
+                        class="bi bi-moon"
+                    ></i>
+
+                </button>
+
+            </li>
+
+
+            <!-- NOTIFICACIONES -->
+
+            <li class="nav-item dropdown">
+
+                <a
+                    class="nav-link"
+                    href="#"
+                    data-bs-toggle="dropdown"
+                >
+
+                    <i class="bi bi-bell fs-5"></i>
+
+                    <span
+                        class="navbar-badge badge text-bg-danger"
+                    >
+
+                        3
+
+                    </span>
+
+                </a>
+
+
+                <div
+                    class="dropdown-menu dropdown-menu-lg dropdown-menu-end"
+                >
+
+                    <span
+                        class="dropdown-item dropdown-header"
+                    >
+
+                        3 notificaciones
+
+                    </span>
+
+
+                    <div class="dropdown-divider"></div>
+
+
+                    <a
+                        href="#"
+                        class="dropdown-item"
+                    >
+
+                        <i
+                            class="bi bi-cloud-upload me-2 text-primary"
+                        ></i>
+
+                        Archivo subido correctamente
+
+                    </a>
+
+
+                    <div class="dropdown-divider"></div>
+
+
+                    <a
+                        href="#"
+                        class="dropdown-item"
+                    >
+
+                        <i
+                            class="bi bi-share me-2 text-primary"
+                        ></i>
+
+                        Ana compartió una carpeta
+
+                    </a>
+
+
+                    <div class="dropdown-divider"></div>
+
+
+                    <a
+                        href="#"
+                        class="dropdown-item"
+                    >
+
+                        <i
+                            class="bi bi-info-circle me-2 text-primary"
+                        ></i>
+
+                        Almacenamiento al 68%
+
+                    </a>
+
+                </div>
+
+            </li>
+
+
+            <!-- USUARIO -->
+
+            <li class="nav-item dropdown ms-1">
+
+                <a
+                    class="nav-link d-flex align-items-center"
+                    href="#"
+                    data-bs-toggle="dropdown"
+                >
+
+                    <span
+                        id="currentUserAvatar"
+                        class="cloud-avatar me-2"
+                    >
+                        U
+                    </span>
+
+                    <span
+                        id="currentUserName"
+                        class="cloud-desktop"
+                    >
+                        Usuario
+                    </span>
+
+
+                    <i
+                        class="bi bi-chevron-down ms-2 small"
+                    ></i>
+
+                </a>
+
+
+                <ul class="dropdown-menu dropdown-menu-end">
+
+                    <li>
+
+                        <a
+                            href="#"
+                            class="dropdown-item"
+                        >
+
+                            <i class="bi bi-person me-2"></i>
+
+                            Mi perfil
+
+                        </a>
+
+                    </li>
+
+
+                    <li>
+
+                        <a
+                            href="#"
+                            class="dropdown-item"
+                        >
+
+                            <i class="bi bi-gear me-2"></i>
+
+                            Configuración
+
+                        </a>
+
+                    </li>
+
+
+                    <li>
+
+                        <hr class="dropdown-divider">
+
+                    </li>
+
+
+                    <li>
+
+                        <a
+                            href="#"
+                            id="logoutButton"
+                            class="dropdown-item text-danger"
+                        >
+
+                            <i
+                                class="bi bi-box-arrow-right me-2"
+                            ></i>
+
+                            Cerrar sesión
+
+                        </a>
+
+                    </li>
+
+                </ul>
+
+            </li>
+
+        </ul>
+
+    </div>
+
+</nav>
+
+
+<!-- =====================================================
+     SIDEBAR
+====================================================== -->
+
+<aside class="app-sidebar">
+
+
+    <!-- BRAND -->
+
+    <div class="sidebar-brand">
+
+        <a
+            href="dashboard.html"
+            class="brand-link text-decoration-none"
+        >
+
+            <span class="cloud-logo">
+
+                <i class="bi bi-cloud-fill"></i>
+
+            </span>
+
+
+            <span class="cloud-brand">
+
+                CloudBox
+
+            </span>
+
+        </a>
+
+    </div>
+
+
+    <div class="sidebar-wrapper">
+
+
+        <nav class="mt-2">
+
+            <ul
+                class="nav sidebar-menu flex-column"
+                data-lte-toggle="treeview"
+                role="menu"
+            >
+
+
+                <li class="nav-header">
+
+                    PRINCIPAL
+
+                </li>
+
+
+                <!-- DASHBOARD -->
+
+                <li class="nav-item">
+
+                    <a
+                        href="dashboard.html"
+                        class="nav-link active"
+                    >
+
+                        <i
+                            class="nav-icon bi bi-grid-1x2-fill"
+                        ></i>
+
+                        <p>
+
+                            Mis archivos
+
+                        </p>
+
+                    </a>
+
+                </li>
+
+
+                <!-- RECIENTES -->
+
+                <li class="nav-item">
+
+                    <a
+                        href="#"
+                        class="nav-link"
+                    >
+
+                        <i
+                            class="nav-icon bi bi-clock-history"
+                        ></i>
+
+                        <p>
+
+                            Recientes
+
+                        </p>
+
+                    </a>
+
+                </li>
+
+
+                <!-- FAVORITOS -->
+
+                <li class="nav-item">
+
+                    <a
+                        href="#"
+                        class="nav-link"
+                    >
+
+                        <i
+                            class="nav-icon bi bi-star-fill"
+                        ></i>
+
+                        <p>
+
+                            Favoritos
+
+                        </p>
+
+                    </a>
+
+                </li>
+
+
+                <!-- COMPARTIDO -->
+
+                <li class="nav-header mt-2">
+
+                    COMPARTIDO
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <a
+                        href="#"
+                        class="nav-link"
+                    >
+
+                        <i
+                            class="nav-icon bi bi-people-fill"
+                        ></i>
+
+                        <p>
+
+                            Compartidos
+
+                        </p>
+
+                    </a>
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <a
+                        href="#"
+                        class="nav-link"
+                    >
+
+                        <i
+                            class="nav-icon bi bi-link-45deg"
+                        ></i>
+
+                        <p>
+
+                            Enlaces
+
+                        </p>
+
+                    </a>
+
+                </li>
+
+
+                <!-- SISTEMA -->
+
+                <li class="nav-header mt-2">
+
+                    SISTEMA
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <a
+                        href="#"
+                        class="nav-link"
+                    >
+
+                        <i
+                            class="nav-icon bi bi-trash3-fill"
+                        ></i>
+
+                        <p>
+
+                            Papelera
+
+                        </p>
+
+                    </a>
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <a
+                        href="#"
+                        class="nav-link"
+                    >
+
+                        <i
+                            class="nav-icon bi bi-gear-fill"
+                        ></i>
+
+                        <p>
+
+                            Configuración
+
+                        </p>
+
+                    </a>
+
+                </li>
+
+            </ul>
+
+        </nav>
+
+
+        <!-- STORAGE -->
+
+        <div class="sidebar-storage">
+
+            <div class="d-flex align-items-center mb-2">
+
+                <i
+                    class="bi bi-cloud me-2 text-info"
+                ></i>
+
+                <span
+                    class="text-white small fw-semibold"
+                >
+
+                    Almacenamiento
+
+                </span>
+
+            </div>
+
+
+            <div class="progress mb-2">
+
+                <div
+                    class="progress-bar"
+                    style="width:68%"
+                ></div>
+
+            </div>
+
+
+            <div
+                class="d-flex justify-content-between"
+            >
+
+                <small class="text-white-50">
+
+                    68 GB usados
+
+                </small>
+
+
+                <small class="text-white-50">
+
+                    100 GB
+
+                </small>
+
+            </div>
+
+
+            <button
+                class="btn btn-sm btn-outline-light w-100 mt-3"
+            >
+
+                <i class="bi bi-plus-lg me-1"></i>
+
+                Ampliar almacenamiento
+
+            </button>
+
+        </div>
+
+    </div>
+
+</aside>
+
+
+<!-- =====================================================
+     MAIN
+====================================================== -->
+
+<main class="app-main">
+
+
+    <!-- HEADER CONTENT -->
+
+    <div class="app-content-header cloud-content-header">
+
+        <div class="container-fluid">
+
+            <div class="row align-items-center">
+
+
+                <div class="col-lg-7">
+
+                    <h1 class="cloud-title">
+
+                        Mis archivos
+
+                    </h1>
+
+
+                    <p class="cloud-description">
+
+                        Administra, organiza y comparte
+                        tus archivos y carpetas.
+
+                    </p>
+
+
+                    <ol class="breadcrumb cloud-breadcrumb">
+
+                        <li class="breadcrumb-item">
+
+                            <a href="dashboard.html">
+
+                                CloudBox
+
+                            </a>
+
+                        </li>
+
+
+                        <li class="breadcrumb-item active">
+
+                            Mis archivos
+
+                        </li>
+
+                    </ol>
+
+                </div>
+
+
+                <div
+                    class="col-lg-5 text-lg-end mt-3 mt-lg-0"
+                >
+
+                    <button
+                        id="newFolderButton"
+                        class="btn btn-outline-primary btn-sm me-1"
+                    >
+
+                        <i class="bi bi-folder-plus me-1"></i>
+
+                        Nueva carpeta
+
+                    </button>
+
+
+                    <button
+                        id="uploadButton"
+                        class="btn btn-cloud btn-sm"
+                    >
+
+                        <i class="bi bi-cloud-upload me-1"></i>
+
+                        Subir archivos
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- CONTENT -->
+
+    <div class="app-content">
+
+        <div class="container-fluid">
+
+
+            <!-- TOOLBAR -->
+
+            <div class="file-toolbar">
+
+                <div class="row align-items-center">
+
+
+                    <div class="col-lg-5">
+
+                        <div
+                            class="input-group input-group-sm toolbar-search"
+                        >
+
+                            <span class="input-group-text">
+
+                                <i class="bi bi-search"></i>
+
+                            </span>
+
+
+                            <input
+                                type="search"
+                                id="fileSearch"
+                                class="form-control"
+                                placeholder="Buscar en mis archivos..."
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-lg-7">
+
+                        <div
+                            class="toolbar-actions d-flex justify-content-lg-end gap-2"
+                        >
+
+
+                            <!-- ORDEN -->
+
+                            <select
+                                id="sortFiles"
+                                class="form-select form-select-sm"
+                                style="max-width:180px;"
+                            >
+
+                                <option value="name">
+
+                                    Ordenar: Nombre
+
+                                </option>
+
+
+                                <option value="date">
+
+                                    Ordenar: Fecha
+
+                                </option>
+
+
+                                <option value="size">
+
+                                    Ordenar: Tamaño
+
+                                </option>
+
+
+                                <option value="type">
+
+                                    Ordenar: Tipo
+
+                                </option>
+
+                            </select>
+
+
+                            <!-- LIST -->
+
+                            <button
+                                id="listViewButton"
+                                class="btn btn-sm btn-primary"
+                                title="Vista de lista"
+                            >
+
+                                <i class="bi bi-list"></i>
+
+                            </button>
+
+
+                            <!-- GRID -->
+
+                            <button
+                                id="gridViewButton"
+                                class="btn btn-sm btn-outline-secondary"
+                                title="Vista de cuadrícula"
+                            >
+
+                                <i
+                                    class="bi bi-grid-3x3-gap"
+                                ></i>
+
+                            </button>
+
+
+                            <!-- FILTER -->
+
+                            <button
+                                id="filterButton"
+                                class="btn btn-sm btn-outline-secondary"
+                                title="Filtrar"
+                            >
+
+                                <i class="bi bi-funnel"></i>
+
+                                <span class="d-none d-md-inline">
+
+                                    Filtrar
+
+                                </span>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 FOLDERS
+            ================================================== -->
+
+            <div class="content-section">
+
+                <div
+                    class="d-flex align-items-center justify-content-between mb-2"
+                >
+
+                    <div>
+
+                        <h2 class="section-title">
+
+                            <i
+                                class="bi bi-cloud me-1 text-primary"
+                            ></i>
+
+                            Carpetas
+
+                        </h2>
+
+
+                        <div class="section-description">
+
+                            Tus carpetas almacenadas
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="small text-muted">
+
+                        <span id="folderCount">
+
+                            0
+
+                        </span>
+
+                        carpetas
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="foldersContainer"
+                    class="row g-3"
+                ></div>
+
+            </div>
+
+
+            <!-- =================================================
+                 FILES
+            ================================================== -->
+
+            <div class="content-section">
+
+                <div
+                    class="d-flex justify-content-between align-items-center mb-2"
+                >
+
+                    <div>
+
+                        <h2 class="section-title">
+
+                            Archivos
+
+                        </h2>
+
+
+                        <div class="section-description">
+
+                            Todos los archivos almacenados
+                            en tu cuenta
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="small text-muted">
+
+                        <span id="itemCount">
+
+                            0 elementos
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="files-card">
+
+
+                    <!-- LIST VIEW -->
+
+                    <div id="listView">
+
+                        <div class="table-responsive">
+
+                            <table
+                                class="table table-hover file-table"
+                            >
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th class="file-check">
+
+                                            <input
+                                                type="checkbox"
+                                                id="selectAllFiles"
+                                                class="form-check-input"
+                                            >
+
+                                        </th>
+
+
+                                        <th>
+
+                                            Nombre
+
+                                        </th>
+
+
+                                        <th>
+
+                                            Propietario
+
+                                        </th>
+
+
+                                        <th>
+
+                                            Modificado
+
+                                        </th>
+
+
+                                        <th>
+
+                                            Tamaño
+
+                                        </th>
+
+
+                                        <th>
+
+                                            Tipo
+
+                                        </th>
+
+
+                                        <th class="text-end">
+
+                                            Acciones
+
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody
+                                    id="filesTableBody"
+                                ></tbody>
+
+                            </table>
+
+                        </div>
+
+
+                        <div
+                            class="table-footer d-flex justify-content-between align-items-center"
+                        >
+
+                            <span>
+
+                                <span id="selectedCount">
+
+                                    0
+
+                                </span>
+
+                                seleccionados
+
+                            </span>
+
+
+                            <span>
+
+                                Mostrando
+
+                                <strong id="tableCount">
+
+                                    0
+
+                                </strong>
+
+                                archivos
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- GRID VIEW -->
+
+                    <div
+                        id="gridView"
+                        class="grid-view"
+                        style="display:none;"
+                    >
+
+                        <div
+                            id="filesGrid"
+                            class="row g-3"
+                        ></div>
+
+                    </div>
+
+
+                    <!-- EMPTY -->
+
+                    <div
+                        id="emptyState"
+                        class="empty-state"
+                        style="display:none;"
+                    >
+
+                        <i class="bi bi-folder2-open"></i>
+
+
+                        <h6 class="mt-2">
+
+                            No se encontraron archivos
+
+                        </h6>
+
+
+                        <p class="small">
+
+                            Prueba con otro término de búsqueda.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
+
+<!-- =====================================================
+     FOOTER
+====================================================== -->
+
+<footer class="app-footer">
+
+    <div class="float-end d-none d-sm-inline">
+
+        CloudBox v1.0
+
+    </div>
+
+
+    <strong>
+
+        © 2026 CloudBox
+
+    </strong>
+
+    · Plataforma de almacenamiento en la nube.
+
+</footer>
+
+
+</div>
+
+
+<!-- =====================================================
+     FILE VIEWER
+====================================================== -->
+
+<div
+    class="modal fade file-viewer-modal"
+    id="fileViewerModal"
+    tabindex="-1"
+    aria-hidden="true"
+>
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+
+            <div class="file-viewer-header">
+
+                <div class="file-viewer-title">
+
+
+                    <span
+                        id="viewerFileIcon"
+                        class="file-icon file-text"
+                    >
+
+                        <i
+                            id="viewerIcon"
+                            class="bi bi-file-earmark"
+                        ></i>
+
+                    </span>
+
+
+                    <div class="viewer-file-info">
+
+                        <div
+                            id="viewerFileName"
+                            class="viewer-file-name"
+                        >
+
+                            Archivo
+
+                        </div>
+
+
+                        <div
+                            id="viewerFileType"
+                            class="viewer-file-type"
+                        >
+
+                            Archivo
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="file-viewer-actions">
+
+
+                    <button
+                        id="viewerOpenButton"
+                        type="button"
+                        class="viewer-action btn-open-new"
+                        title="Abrir en nueva pestaña"
+                    >
+
+                        <i
+                            class="bi bi-box-arrow-up-right"
+                        ></i>
+
+                    </button>
+
+
+                    <button
+                        id="viewerDownloadButton"
+                        type="button"
+                        class="viewer-action"
+                        title="Descargar"
+                    >
+
+                        <i class="bi bi-download"></i>
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="viewer-action viewer-close"
+                        data-bs-dismiss="modal"
+                        title="Cerrar"
+                    >
+
+                        <i class="bi bi-x-lg"></i>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="fileViewerBody"
+                class="file-viewer-body"
+            ></div>
+
+
+            <div class="file-viewer-footer">
+
+                <span id="viewerFileSize">
+
+                    -
+
+                </span>
+
+
+                <span>
+
+                    CloudBox
+
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     UPLOAD MODAL
+====================================================== -->
+
+<div
+    class="modal fade upload-modal"
+    id="uploadModal"
+    tabindex="-1"
+    aria-hidden="true"
+>
+
+    <div
+        class="modal-dialog modal-dialog-centered modal-lg"
+    >
+
+        <div class="modal-content">
+
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h5 class="modal-title">
+
+                        <i
+                            class="bi bi-cloud-arrow-up me-2 text-primary"
+                        ></i>
+
+                        Subir archivos
+
+                    </h5>
+
+
+                    <div class="small text-muted">
+
+                        Agrega archivos a tu almacenamiento
+                        CloudBox.
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                ></button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+
+                <div
+                    id="uploadDropZone"
+                    class="upload-drop-zone"
+                >
+
+                    <i class="bi bi-cloud-arrow-up"></i>
+
+
+                    <h6>
+
+                        Arrastra tus archivos aquí
+
+                    </h6>
+
+
+                    <p>
+
+                        o haz clic para seleccionarlos
+                        desde tu dispositivo
+
+                    </p>
+
+
+                    <div class="upload-limit">
+
+                        Máximo 100 MB por archivo ·
+                        Puedes seleccionar varios archivos
+
+                    </div>
+
+                </div>
+
+
+                <input
+                    type="file"
+                    id="fileInput"
+                    multiple
+                    hidden
+                >
+
+
+                <div
+                    id="uploadFilesSection"
+                    style="display:none;"
+                >
+
+                    <div class="upload-files-header">
+
+                        <h6>
+
+                            Archivos seleccionados
+
+                        </h6>
+
+
+                        <button
+                            id="clearFilesButton"
+                            type="button"
+                            class="btn btn-sm btn-outline-danger"
+                        >
+
+                            <i
+                                class="bi bi-trash3 me-1"
+                            ></i>
+
+                            Limpiar
+
+                        </button>
+
+                    </div>
+
+
+                    <div
+                        id="uploadFileList"
+                        class="upload-file-list"
+                    ></div>
+
+
+                    <div class="upload-summary">
+
+                        <span>
+
+                            <strong id="uploadCount">
+
+                                0
+
+                            </strong>
+
+                            archivos
+
+                        </span>
+
+
+                        <span>
+
+                            <strong id="uploadSize">
+
+                                0 B
+
+                            </strong>
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    data-bs-dismiss="modal"
+                >
+
+                    Cancelar
+
+                </button>
+
+
+                <button
+                    id="startUploadButton"
+                    type="button"
+                    class="btn btn-sm btn-cloud"
+                    disabled
+                >
+
+                    <i
+                        class="bi bi-cloud-upload me-1"
+                    ></i>
+
+                    Subir archivos
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     BOOTSTRAP
+====================================================== -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+></script>
+
+
+<!-- =====================================================
+     ADMINLTE
+====================================================== -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0/dist/js/adminlte.min.js"
+></script>
+
+
+<!-- =====================================================
+     COMPONENTES
+====================================================== -->
+
+<script src="js/components.js"></script>
+
+
+<!-- =====================================================
+     DASHBOARD
+====================================================== -->
+
+<script src="js/dashboard.js"></script>
+
+
+</body>
+
+</html>

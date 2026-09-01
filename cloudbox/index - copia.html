@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CloudBox · Iniciar sesión</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<!-- SDK de Amazon Cognito -->
+<script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.7/dist/amazon-cognito-identity.min.js"></script>
+
+<script>
+  const savedTheme = localStorage.getItem("cloudbox-theme") || "light";
+  document.documentElement.setAttribute("data-bs-theme", savedTheme);
+</script>
+<style>
+  :root {
+    --cb-primary: #1769aa;
+    --cb-primary-hover: #12598f;
+    --cb-background: #edf2f6;
+    --cb-surface: #ffffff;
+    --cb-border: #dce4eb;
+    --cb-text: #17212b;
+    --cb-text-secondary: #617181;
+    --cb-muted: #82909d;
+    --cb-shadow: 0 15px 45px rgba(20,45,65,.12);
+    --cb-danger: #dc3545;
+    --cb-success: #198754;
+  }
+  [data-bs-theme="dark"] {
+    --cb-primary: #4da3d9;
+    --cb-primary-hover: #6ab4e3;
+    --cb-background: #11161d;
+    --cb-surface: #171d25;
+    --cb-border: #2b3540;
+    --cb-text: #e7edf3;
+    --cb-text-secondary: #9caebe;
+    --cb-muted: #788695;
+    --cb-shadow: 0 15px 45px rgba(0,0,0,.30);
+  }
+  * { box-sizing: border-box; }
+  body {
+    min-height: 100vh; margin: 0;
+    background: var(--cb-background);
+    color: var(--cb-text);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .login-page {
+    min-height: 100vh; display: flex;
+    align-items: center; justify-content: center;
+    padding: 30px 18px; position: relative; overflow: hidden;
+  }
+  .background-shape {
+    position: absolute; border-radius: 50%;
+    filter: blur(2px); pointer-events: none; opacity: .45;
+  }
+  .shape-one { width:320px;height:320px;background:rgba(23,105,170,.09);top:-150px;left:-100px; }
+  .shape-two { width:420px;height:420px;background:rgba(77,163,217,.08);right:-180px;bottom:-180px; }
+  [data-bs-theme="dark"] .background-shape { opacity:.30; }
+
+  .login-container {
+    width:100%; max-width:980px;
+    display:grid; grid-template-columns:1fr 1fr;
+    background:var(--cb-surface);
+    border:1px solid var(--cb-border);
+    border-radius:18px; overflow:hidden;
+    box-shadow:var(--cb-shadow);
+    position:relative; z-index:2;
+  }
+
+  /* Brand */
+  .login-brand-panel {
+    background:#0d1526; color:#fff;
+    padding:55px 50px;
+    display:flex; flex-direction:column; justify-content:space-between;
+    min-height:600px; position:relative; overflow:hidden;
+  }
+  .login-brand-panel::before {
+    content:""; position:absolute; width:320px; height:320px;
+    border-radius:50%; background:rgba(23,105,170,.20); right:-150px; top:-120px;
+  }
+  .login-brand-panel::after {
+    content:""; position:absolute; width:260px; height:260px;
+    border-radius:50%; background:rgba(77,163,217,.10); left:-150px; bottom:-120px;
+  }
+  .brand { display:flex; align-items:center; text-decoration:none; color:#fff; position:relative; z-index:2; }
+  .brand-logo {
+    width:45px; height:45px; display:inline-flex; align-items:center; justify-content:center;
+    background:#1769aa; border-radius:11px; margin-right:12px;
+    font-size:1.25rem; box-shadow:0 6px 15px rgba(0,0,0,.20);
+  }
+  .brand-name { font-size:1.25rem; font-weight:700; letter-spacing:-.3px; }
+  .brand-content { position:relative; z-index:2; }
+  .brand-content h1 { font-size:2rem; line-height:1.2; font-weight:700; margin-bottom:18px; letter-spacing:-.7px; }
+  .brand-content p { color:#aeb8c4; font-size:.9rem; line-height:1.7; margin-bottom:28px; }
+  .feature { display:flex; align-items:center; margin-bottom:15px; color:#d5dce4; font-size:.8rem; }
+  .feature-icon {
+    width:30px; height:30px; display:inline-flex; align-items:center; justify-content:center;
+    border-radius:7px; background:rgba(77,163,217,.13); color:#6ab4e3; margin-right:10px; flex-shrink:0;
+  }
+  .brand-footer { color:#667585; font-size:.68rem; position:relative; z-index:2; }
+
+  /* Panel derecho */
+  .login-panel {
+    padding:50px 48px;
+    display:flex; flex-direction:column; justify-content:center;
+  }
+
+  /* Tabs */
+  .auth-tabs {
+    display:flex; border-bottom:2px solid var(--cb-border); margin-bottom:24px;
+  }
+  .auth-tab {
+    flex:1; padding:10px; text-align:center;
+    font-size:.8rem; font-weight:600; cursor:pointer;
+    color:var(--cb-muted); border:none; background:transparent;
+    border-bottom:2px solid transparent; margin-bottom:-2px; transition:all .15s;
+  }
+  .auth-tab.active { color:var(--cb-primary); border-bottom-color:var(--cb-primary); }
+
+  /* Form */
+  .form-label { font-size:.75rem; font-weight:600; margin-bottom:6px; color:var(--cb-text); }
+  .input-group-text {
+    background:transparent !important;
+    border:1px solid var(--cb-border); border-right:0; color:var(--cb-muted);
+    transition: border-color .15s;
+  }
+  .form-control {
+    background:transparent !important; color:var(--cb-text) !important;
+    border:1px solid var(--cb-border); border-left:0;
+    font-size:.82rem; min-height:44px; box-shadow:none !important;
+    transition: border-color .15s;
+  }
+  .form-control::placeholder { color:var(--cb-muted); }
+  .input-group:focus-within .input-group-text,
+  .input-group:focus-within .form-control { border-color:var(--cb-primary); }
+  .input-group.error .input-group-text,
+  .input-group.error .form-control { border-color:var(--cb-danger) !important; }
+
+  .pass-btn {
+    border:1px solid var(--cb-border); border-left:0;
+    background:transparent; color:var(--cb-muted); padding:0 13px;
+    transition:color .15s; cursor:pointer;
+  }
+  .pass-btn:hover { color:var(--cb-primary); }
+
+  .field-err { font-size:.7rem; color:var(--cb-danger); margin-top:4px; display:none; }
+  .field-err.show { display:block; }
+
+  /* Strength bar */
+  .strength-wrap { margin-top:6px; }
+  .strength-bar { display:flex; gap:3px; height:4px; border-radius:4px; }
+  .strength-seg { flex:1; border-radius:4px; background:var(--cb-border); transition:background .3s; }
+  .strength-lbl { font-size:.68rem; color:var(--cb-muted); margin-top:3px; }
+
+  /* Options */
+  .login-opts { display:flex; align-items:center; justify-content:space-between; margin:14px 0 18px; }
+  .form-check-label { font-size:.72rem; color:var(--cb-text-secondary); }
+  .forgot { color:var(--cb-primary); text-decoration:none; font-size:.72rem; font-weight:500; }
+  .forgot:hover { text-decoration:underline; }
+
+  /* Buttons */
+  .btn-main {
+    width:100%; min-height:44px;
+    background:var(--cb-primary); border:1px solid var(--cb-primary);
+    color:#fff; border-radius:8px; font-size:.82rem; font-weight:600;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    transition:all .15s; cursor:pointer;
+  }
+  .btn-main:hover:not(:disabled) {
+    background:var(--cb-primary-hover); border-color:var(--cb-primary-hover);
+    transform:translateY(-1px); box-shadow:0 4px 14px rgba(23,105,170,.3);
+  }
+  .btn-main:disabled { opacity:.65; cursor:not-allowed; }
+
+  .spinner-sm {
+    width:16px; height:16px;
+    border:2px solid rgba(255,255,255,.35); border-top-color:#fff;
+    border-radius:50%; animation:spin .6s linear infinite; display:none; flex-shrink:0;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .divider { display:flex; align-items:center; gap:10px; margin:18px 0; color:var(--cb-muted); font-size:.65rem; }
+  .divider::before, .divider::after { content:""; flex:1; height:1px; background:var(--cb-border); }
+
+  /* Alert */
+  .cb-alert {
+    font-size:.76rem; padding:10px 14px; border-radius:8px;
+    margin-bottom:16px; display:none; align-items:center; gap:8px; line-height:1.4;
+  }
+  .cb-alert.show { display:flex; }
+  .cb-alert.error   { background:#fff1f1; border:1px solid #fca5a5; color:#b91c1c; }
+  .cb-alert.success { background:#f0fdf4; border:1px solid #86efac; color:#15803d; }
+  .cb-alert.info    { background:#eff6ff; border:1px solid #93c5fd; color:#1d4ed8; }
+  [data-bs-theme="dark"] .cb-alert.error   { background:#2d1515; border-color:#7f1d1d; color:#fca5a5; }
+  [data-bs-theme="dark"] .cb-alert.success { background:#14290e; border-color:#166534; color:#86efac; }
+  [data-bs-theme="dark"] .cb-alert.info    { background:#0f1e35; border-color:#1e40af; color:#93c5fd; }
+
+  /* Verify code */
+  .code-inputs { display:flex; gap:8px; justify-content:center; margin:16px 0; }
+  .code-input {
+    width:44px; height:52px; text-align:center; font-size:1.2rem; font-weight:700;
+    border:1.5px solid var(--cb-border); border-radius:8px;
+    background:transparent; color:var(--cb-text);
+    transition:border-color .15s; outline:none;
+  }
+  .code-input:focus { border-color:var(--cb-primary); }
+
+  /* Switch text */
+  .switch-txt { text-align:center; margin-top:18px; font-size:.72rem; color:var(--cb-text-secondary); }
+  .switch-txt a { color:var(--cb-primary); font-weight:600; cursor:pointer; text-decoration:none; }
+  .switch-txt a:hover { text-decoration:underline; }
+
+  /* Badges */
+  .sec-badges { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-top:18px; }
+  .sec-badge {
+    display:flex; align-items:center; gap:4px; font-size:.63rem;
+    color:var(--cb-muted); background:var(--cb-background);
+    border:1px solid var(--cb-border); border-radius:999px; padding:3px 9px;
+  }
+  .sec-badge i { color:var(--cb-primary); font-size:.68rem; }
+
+  /* Theme button */
+  .theme-btn {
+    position:fixed; top:18px; right:18px; width:38px; height:38px;
+    display:inline-flex; align-items:center; justify-content:center;
+    border:1px solid var(--cb-border); border-radius:8px;
+    background:var(--cb-surface); color:var(--cb-text-secondary);
+    z-index:10; transition:all .15s; cursor:pointer;
+  }
+  .theme-btn:hover { color:var(--cb-primary); border-color:var(--cb-primary); }
+
+  /* Responsive */
+  @media (max-width:800px) {
+    .login-container { max-width:480px; grid-template-columns:1fr; }
+    .login-brand-panel { min-height:auto; padding:30px; }
+    .brand-content { margin-top:30px; }
+    .brand-content h1 { font-size:1.5rem; }
+    .brand-footer { margin-top:20px; }
+    .login-panel { padding:32px 28px; }
+  }
+  @media (max-width:480px) {
+    .login-page { padding:12px; align-items:flex-start; padding-top:55px; }
+    .login-container { border-radius:14px; }
+    .login-brand-panel { padding:24px 20px; }
+    .login-panel { padding:28px 20px; }
+    .feature:nth-child(n+3) { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<button id="themeBtn" class="theme-btn" title="Cambiar tema">
+  <i id="themeIcon" class="bi bi-moon"></i>
+</button>
+
+<main class="login-page">
+  <div class="background-shape shape-one"></div>
+  <div class="background-shape shape-two"></div>
+
+  <div class="login-container">
+
+    <!-- ══ BRAND ══ -->
+    <section class="login-brand-panel">
+      <a href="#" class="brand">
+        <span class="brand-logo"><i class="bi bi-cloud-fill"></i></span>
+        <span class="brand-name">CloudBox</span>
+      </a>
+      <div class="brand-content">
+        <h1>Tus archivos.<br>Siempre contigo.</h1>
+        <p>Guarda, organiza y comparte tus archivos de forma segura desde cualquier dispositivo.</p>
+        <div class="feature">
+          <span class="feature-icon"><i class="bi bi-cloud-check"></i></span>
+          Almacenamiento seguro en la nube
+        </div>
+        <div class="feature">
+          <span class="feature-icon"><i class="bi bi-folder2-open"></i></span>
+          Organiza tus archivos fácilmente
+        </div>
+        <div class="feature">
+          <span class="feature-icon"><i class="bi bi-shield-lock"></i></span>
+          Protegido por AWS Cognito
+        </div>
+        <div class="feature">
+          <span class="feature-icon"><i class="bi bi-envelope-check"></i></span>
+          Verificación de correo automática
+        </div>
+      </div>
+      <div class="brand-footer">© 2026 CloudBox · Plataforma de almacenamiento</div>
+    </section>
+
+    <!-- ══ AUTH PANEL ══ -->
+    <section class="login-panel">
+
+      <!-- Alert global -->
+      <div class="cb-alert" id="alert">
+        <i id="alertIcon" class="bi bi-info-circle-fill"></i>
+        <span id="alertMsg"></span>
+      </div>
+
+      <!-- ── VISTA: LOGIN ── -->
+      <div id="viewLogin">
+        <div class="auth-tabs">
+          <button class="auth-tab active" onclick="showView('login')">Iniciar sesión</button>
+          <button class="auth-tab" onclick="showView('register')">Crear cuenta</button>
+        </div>
+
+        <form id="loginForm" novalidate onsubmit="handleLogin(event)">
+
+          <!-- Email -->
+          <div class="mb-3">
+            <label class="form-label">Correo electrónico</label>
+            <div class="input-group" id="lgEmailGrp">
+              <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+              <input type="email" id="lgEmail" class="form-control"
+                placeholder="nombre@ejemplo.com" autocomplete="email" required>
+            </div>
+            <div class="field-err" id="lgEmailErr">Ingresa un correo válido.</div>
+          </div>
+
+          <!-- Password -->
+          <div class="mb-1">
+            <label class="form-label">Contraseña</label>
+            <div class="input-group" id="lgPassGrp">
+              <span class="input-group-text"><i class="bi bi-lock"></i></span>
+              <input type="password" id="lgPass" class="form-control"
+                placeholder="Tu contraseña" autocomplete="current-password" required>
+              <button type="button" class="pass-btn" onclick="togglePass('lgPass','lgPassIcon')">
+                <i id="lgPassIcon" class="bi bi-eye"></i>
+              </button>
+            </div>
+            <div class="field-err" id="lgPassErr">La contraseña es obligatoria.</div>
+          </div>
+
+          <div class="login-opts">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="remember">
+              <label class="form-check-label" for="remember">Recordarme</label>
+            </div>
+            <a href="#" class="forgot" onclick="showView('forgot');return false;">¿Olvidaste tu contraseña?</a>
+          </div>
+
+          <button type="submit" class="btn-main" id="btnLogin">
+            <span class="spinner-sm" id="lgSpinner"></span>
+            <i class="bi bi-box-arrow-in-right"></i>
+            <span id="lgBtnTxt">Iniciar sesión</span>
+          </button>
+
+          <div class="sec-badges">
+            <span class="sec-badge"><i class="bi bi-shield-fill"></i> AWS Cognito</span>
+            <span class="sec-badge"><i class="bi bi-lock-fill"></i> JWT</span>
+            <span class="sec-badge"><i class="bi bi-eye-slash-fill"></i> bcrypt</span>
+            <span class="sec-badge"><i class="bi bi-cloud-check-fill"></i> HTTPS</span>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- ── VISTA: REGISTRO ── -->
+      <div id="viewRegister" style="display:none">
+        <div class="auth-tabs">
+          <button class="auth-tab" onclick="showView('login')">Iniciar sesión</button>
+          <button class="auth-tab active" onclick="showView('register')">Crear cuenta</button>
+        </div>
+
+        <form id="registerForm" novalidate onsubmit="handleRegister(event)">
+
+          <!-- Nombre -->
+          <div class="mb-3">
+            <label class="form-label">Nombre completo</label>
+            <div class="input-group" id="rgNameGrp">
+              <span class="input-group-text"><i class="bi bi-person"></i></span>
+              <input type="text" id="rgName" class="form-control"
+                placeholder="Tu nombre" autocomplete="name" required>
+            </div>
+            <div class="field-err" id="rgNameErr">Mínimo 2 caracteres.</div>
+          </div>
+
+          <!-- Email -->
+          <div class="mb-3">
+            <label class="form-label">Correo electrónico</label>
+            <div class="input-group" id="rgEmailGrp">
+              <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+              <input type="email" id="rgEmail" class="form-control"
+                placeholder="nombre@ejemplo.com" autocomplete="email" required>
+            </div>
+            <div class="field-err" id="rgEmailErr">Ingresa un correo válido.</div>
+          </div>
+
+          <!-- Password -->
+          <div class="mb-1">
+            <label class="form-label">Contraseña</label>
+            <div class="input-group" id="rgPassGrp">
+              <span class="input-group-text"><i class="bi bi-lock"></i></span>
+              <input type="password" id="rgPass" class="form-control"
+                placeholder="Mínimo 8 caracteres" autocomplete="new-password"
+                required oninput="checkStrength(this.value)">
+              <button type="button" class="pass-btn" onclick="togglePass('rgPass','rgPassIcon')">
+                <i id="rgPassIcon" class="bi bi-eye"></i>
+              </button>
+            </div>
+            <div class="strength-wrap">
+              <div class="strength-bar">
+                <div class="strength-seg" id="s1"></div>
+                <div class="strength-seg" id="s2"></div>
+                <div class="strength-seg" id="s3"></div>
+                <div class="strength-seg" id="s4"></div>
+              </div>
+              <div class="strength-lbl" id="sLbl"></div>
+            </div>
+            <div class="field-err" id="rgPassErr">Mínimo 8 caracteres, mayúscula, número y símbolo.</div>
+          </div>
+
+          <!-- Confirmar -->
+          <div class="mb-3" style="margin-top:10px">
+            <label class="form-label">Confirmar contraseña</label>
+            <div class="input-group" id="rgConfGrp">
+              <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+              <input type="password" id="rgConf" class="form-control"
+                placeholder="Repite tu contraseña" autocomplete="new-password" required>
+              <button type="button" class="pass-btn" onclick="togglePass('rgConf','rgConfIcon')">
+                <i id="rgConfIcon" class="bi bi-eye"></i>
+              </button>
+            </div>
+            <div class="field-err" id="rgConfErr">Las contraseñas no coinciden.</div>
+          </div>
+
+          <button type="submit" class="btn-main" id="btnRegister">
+            <span class="spinner-sm" id="rgSpinner"></span>
+            <i class="bi bi-person-plus"></i>
+            <span id="rgBtnTxt">Crear cuenta</span>
+          </button>
+
+          <div class="switch-txt">
+            ¿Ya tienes cuenta? <a onclick="showView('login')">Inicia sesión</a>
+          </div>
+        </form>
+      </div>
+
+      <!-- ── VISTA: VERIFICAR EMAIL ── -->
+      <div id="viewVerify" style="display:none">
+        <h5 style="font-weight:700;margin-bottom:6px">Verifica tu correo 📧</h5>
+        <p style="font-size:.8rem;color:var(--cb-text-secondary);margin-bottom:16px">
+          Te enviamos un código de 6 dígitos a <strong id="verifyEmail"></strong>.
+          Revisa tu bandeja de entrada y correo no deseado.
+        </p>
+
+        <div class="code-inputs">
+          <input class="code-input" id="c0" maxlength="1" oninput="codeInput(0)" onkeydown="codeBack(event,0)">
+          <input class="code-input" id="c1" maxlength="1" oninput="codeInput(1)" onkeydown="codeBack(event,1)">
+          <input class="code-input" id="c2" maxlength="1" oninput="codeInput(2)" onkeydown="codeBack(event,2)">
+          <input class="code-input" id="c3" maxlength="1" oninput="codeInput(3)" onkeydown="codeBack(event,3)">
+          <input class="code-input" id="c4" maxlength="1" oninput="codeInput(4)" onkeydown="codeBack(event,4)">
+          <input class="code-input" id="c5" maxlength="1" oninput="codeInput(5)" onkeydown="codeBack(event,5)">
+        </div>
+
+        <button class="btn-main" id="btnVerify" onclick="handleVerify()">
+          <span class="spinner-sm" id="vfSpinner"></span>
+          <i class="bi bi-patch-check"></i>
+          <span id="vfBtnTxt">Verificar cuenta</span>
+        </button>
+
+        <div class="switch-txt" style="margin-top:14px">
+          ¿No recibiste el código?
+          <a onclick="resendCode()">Reenviar</a>
+        </div>
+      </div>
+
+      <!-- ── VISTA: RECUPERAR CONTRASEÑA ── -->
+      <div id="viewForgot" style="display:none">
+        <h5 style="font-weight:700;margin-bottom:6px">Recuperar contraseña</h5>
+        <p style="font-size:.8rem;color:var(--cb-text-secondary);margin-bottom:16px">
+          Ingresa tu correo y te enviaremos un código para restablecer tu contraseña.
+        </p>
+
+        <div class="mb-3">
+          <label class="form-label">Correo electrónico</label>
+          <div class="input-group" id="fpEmailGrp">
+            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+            <input type="email" id="fpEmail" class="form-control" placeholder="nombre@ejemplo.com">
+          </div>
+        </div>
+
+        <button class="btn-main" onclick="handleForgot()">
+          <span class="spinner-sm" id="fpSpinner"></span>
+          <i class="bi bi-send"></i>
+          <span id="fpBtnTxt">Enviar código</span>
+        </button>
+
+        <div class="switch-txt" style="margin-top:14px">
+          <a onclick="showView('login')">← Volver al inicio de sesión</a>
+        </div>
+      </div>
+
+      <!-- ── VISTA: NUEVA CONTRASEÑA ── -->
+      <div id="viewNewPass" style="display:none">
+        <h5 style="font-weight:700;margin-bottom:6px">Nueva contraseña</h5>
+        <p style="font-size:.8rem;color:var(--cb-text-secondary);margin-bottom:16px">
+          Ingresa el código que te enviamos y tu nueva contraseña.
+        </p>
+
+        <div class="mb-3">
+          <label class="form-label">Código de verificación</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-key"></i></span>
+            <input type="text" id="npCode" class="form-control" placeholder="123456" maxlength="6">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Nueva contraseña</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+            <input type="password" id="npPass" class="form-control"
+              placeholder="Mínimo 8 caracteres" oninput="checkStrength(this.value)">
+            <button type="button" class="pass-btn" onclick="togglePass('npPass','npPassIcon')">
+              <i id="npPassIcon" class="bi bi-eye"></i>
+            </button>
+          </div>
+          <div class="strength-wrap">
+            <div class="strength-bar">
+              <div class="strength-seg" id="ns1"></div>
+              <div class="strength-seg" id="ns2"></div>
+              <div class="strength-seg" id="ns3"></div>
+              <div class="strength-seg" id="ns4"></div>
+            </div>
+            <div class="strength-lbl" id="nsLbl"></div>
+          </div>
+        </div>
+
+        <button class="btn-main" onclick="handleNewPassword()">
+          <span class="spinner-sm" id="npSpinner"></span>
+          <i class="bi bi-check-circle"></i>
+          <span id="npBtnTxt">Cambiar contraseña</span>
+        </button>
+      </div>
+
+    </section>
+  </div>
+</main>
+
+<script>
+/* ══════════════════════════════════════════════
+   COGNITO CONFIG — tus datos reales
+══════════════════════════════════════════════ */
+const POOL_DATA = {
+  UserPoolId: "us-east-1_UUxJ24QzU",
+  ClientId:   "1pertl4p9uja06gtqrfuu36qqs",
+};
+const userPool = new AmazonCognitoIdentity.CognitoUserPool(POOL_DATA);
+
+let pendingUser    = null;  // usuario pendiente de verificación
+let forgotEmail    = null;  // email para recuperación
+
+/* ══════════════════════════════════════════════
+   TEMA
+══════════════════════════════════════════════ */
+const themeBtn  = document.getElementById("themeBtn");
+const themeIcon = document.getElementById("themeIcon");
+
+function updateThemeIcon(t) {
+  themeIcon.className = t === "dark" ? "bi bi-sun" : "bi bi-moon";
+  themeBtn.title      = t === "dark" ? "Modo claro" : "Modo oscuro";
+}
+updateThemeIcon(savedTheme);
+
+themeBtn.addEventListener("click", () => {
+  const next = document.documentElement.getAttribute("data-bs-theme") === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-bs-theme", next);
+  localStorage.setItem("cloudbox-theme", next);
+  updateThemeIcon(next);
+});
+
+/* ══════════════════════════════════════════════
+   VISTAS
+══════════════════════════════════════════════ */
+const VIEWS = ["login","register","verify","forgot","newPass"];
+
+function showView(name) {
+  hideAlert();
+  VIEWS.forEach(v => {
+    const el = document.getElementById("view" + v.charAt(0).toUpperCase() + v.slice(1));
+    if (el) el.style.display = v === name ? "block" : "none";
+  });
+}
+
+/* ══════════════════════════════════════════════
+   ALERTAS
+══════════════════════════════════════════════ */
+function showAlert(msg, type = "info") {
+  const el = document.getElementById("alert");
+  el.className = "cb-alert show " + type;
+  document.getElementById("alertIcon").className = {
+    error:   "bi bi-exclamation-circle-fill",
+    success: "bi bi-check-circle-fill",
+    info:    "bi bi-info-circle-fill",
+  }[type];
+  document.getElementById("alertMsg").textContent = msg;
+  el.scrollIntoView({ behavior:"smooth", block:"nearest" });
+}
+function hideAlert() {
+  document.getElementById("alert").className = "cb-alert";
+}
+
+/* ══════════════════════════════════════════════
+   ERRORES POR CAMPO
+══════════════════════════════════════════════ */
+function fieldErr(grpId, errId, show, msg) {
+  document.getElementById(grpId).classList.toggle("error", show);
+  const el = document.getElementById(errId);
+  if (msg) el.textContent = msg;
+  el.classList.toggle("show", show);
+}
+function clearFields(...pairs) {
+  pairs.forEach(([g, e]) => fieldErr(g, e, false));
+}
+
+/* ══════════════════════════════════════════════
+   TOGGLE CONTRASEÑA
+══════════════════════════════════════════════ */
+function togglePass(inputId, iconId) {
+  const inp  = document.getElementById(inputId);
+  const show = inp.type === "password";
+  inp.type   = show ? "text" : "password";
+  document.getElementById(iconId).className = show ? "bi bi-eye-slash" : "bi bi-eye";
+}
+
+/* ══════════════════════════════════════════════
+   FUERZA DE CONTRASEÑA
+══════════════════════════════════════════════ */
+const S_COLORS = ["#ef4444","#f97316","#eab308","#22c55e"];
+const S_LABELS = ["Muy débil","Débil","Regular","Segura ✓"];
+
+function checkStrength(val) {
+  let score = 0;
+  if (val.length >= 8)           score++;
+  if (/[A-Z]/.test(val))        score++;
+  if (/[0-9]/.test(val))        score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+
+  ["s1","s2","s3","s4"].forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) el.style.background = i < score ? S_COLORS[score-1] : "var(--cb-border)";
+  });
+  ["ns1","ns2","ns3","ns4"].forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) el.style.background = i < score ? S_COLORS[score-1] : "var(--cb-border)";
+  });
+
+  const lbl  = document.getElementById("sLbl");
+  const nlbl = document.getElementById("nsLbl");
+  const txt  = val.length === 0 ? "" : S_LABELS[score-1] || S_LABELS[0];
+  const col  = val.length === 0 ? "" : S_COLORS[score-1];
+  if (lbl)  { lbl.textContent  = txt; lbl.style.color  = col; }
+  if (nlbl) { nlbl.textContent = txt; nlbl.style.color = col; }
+}
+
+/* ══════════════════════════════════════════════
+   VALIDACIONES
+══════════════════════════════════════════════ */
+function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+function isStrongPass(v) {
+  return v.length >= 8 && /[A-Z]/.test(v) && /[0-9]/.test(v) && /[^A-Za-z0-9]/.test(v);
+}
+
+/* ══════════════════════════════════════════════
+   LOADING BUTTON
+══════════════════════════════════════════════ */
+function setLoading(btnId, spinnerId, txtId, loading, label) {
+  const btn = document.getElementById(btnId);
+  btn.disabled = loading;
+  document.getElementById(spinnerId).style.display = loading ? "inline-block" : "none";
+  document.getElementById(txtId).textContent = loading ? "Procesando…" : label;
+}
+
+/* ══════════════════════════════════════════════
+   GUARDAR SESIÓN
+══════════════════════════════════════════════ */
+function saveSession(session, remember) {
+  const store = remember ? localStorage : sessionStorage;
+  store.setItem("cb_access",  session.getAccessToken().getJwtToken());
+  store.setItem("cb_id",      session.getIdToken().getJwtToken());
+  store.setItem("cb_refresh", session.getRefreshToken().getToken());
+  const exp = session.getAccessToken().getExpiration() * 1000;
+  store.setItem("cb_exp", String(exp));
+}
+
+function saveUser(user, remember) {
+  const store = remember ? localStorage : sessionStorage;
+  store.setItem("cb_user", JSON.stringify(user));
+}
+
+/* ══════════════════════════════════════════════
+   LOGIN con Cognito SDK
+══════════════════════════════════════════════ */
+function handleLogin(e) {
+  e.preventDefault();
+  hideAlert();
+  clearFields(["lgEmailGrp","lgEmailErr"],["lgPassGrp","lgPassErr"]);
+
+  const email    = document.getElementById("lgEmail").value.trim();
+  const password = document.getElementById("lgPass").value;
+  const remember = document.getElementById("remember").checked;
+
+  let ok = true;
+  if (!isEmail(email))   { fieldErr("lgEmailGrp","lgEmailErr", true); ok=false; }
+  if (!password)         { fieldErr("lgPassGrp","lgPassErr",   true); ok=false; }
+  if (!ok) return;
+
+  setLoading("btnLogin","lgSpinner","lgBtnTxt", true, "Iniciar sesión");
+
+  const authDetails = new AmazonCognitoIdentity.AuthenticationDetails({
+    Username: email,
+    Password: password,
+  });
+
+  const cognitoUser = new AmazonCognitoIdentity.CognitoUser({
+    Username: email,
+    Pool:     userPool,
+  });
+
+  cognitoUser.authenticateUser(authDetails, {
+    onSuccess(session) {
+      // Decodificar ID token para obtener datos del usuario
+      const payload = session.getIdToken().decodePayload();
+      saveSession(session, remember);
+      saveUser({ name: payload.name || payload["cognito:username"], email: payload.email }, remember);
+      showAlert("¡Bienvenido! Redirigiendo…", "success");
+      setTimeout(() => window.location.href = "dashboard.html", 1000);
+    },
+
+    onFailure(err) {
+      setLoading("btnLogin","lgSpinner","lgBtnTxt", false, "Iniciar sesión");
+      const msgs = {
+        "NotAuthorizedException":     "Correo o contraseña incorrectos.",
+        "UserNotFoundException":       "No existe una cuenta con ese correo.",
+        "UserNotConfirmedException":   "Debes verificar tu correo antes de iniciar sesión.",
+        "PasswordResetRequiredException": "Debes restablecer tu contraseña.",
+        "TooManyRequestsException":    "Demasiados intentos. Espera unos minutos.",
+        "UserLambdaValidationException": "Error de validación. Intenta de nuevo.",
+      };
+      showAlert(msgs[err.code] || err.message || "Error al iniciar sesión.", "error");
+
+      // Si el email no está verificado, ir directo a verificación
+      if (err.code === "UserNotConfirmedException") {
+        pendingUser = cognitoUser;
+        document.getElementById("verifyEmail").textContent = email;
+        setTimeout(() => showView("verify"), 1500);
+      }
+    },
+
+    // Cognito pide cambio de contraseña (primer login de admin)
+    newPasswordRequired(userAttributes) {
+      setLoading("btnLogin","lgSpinner","lgBtnTxt", false, "Iniciar sesión");
+      showAlert("Debes cambiar tu contraseña antes de continuar.", "info");
+      pendingUser = cognitoUser;
+      showView("newPass");
+    },
+  });
+}
+
+/* ══════════════════════════════════════════════
+   REGISTRO con Cognito SDK
+══════════════════════════════════════════════ */
+function handleRegister(e) {
+  e.preventDefault();
+  hideAlert();
+  clearFields(
+    ["rgNameGrp","rgNameErr"],["rgEmailGrp","rgEmailErr"],
+    ["rgPassGrp","rgPassErr"],["rgConfGrp","rgConfErr"]
+  );
+
+  const name     = document.getElementById("rgName").value.trim();
+  const email    = document.getElementById("rgEmail").value.trim();
+  const password = document.getElementById("rgPass").value;
+  const confirm  = document.getElementById("rgConf").value;
+
+  let ok = true;
+  if (name.length < 2)       { fieldErr("rgNameGrp","rgNameErr",  true); ok=false; }
+  if (!isEmail(email))       { fieldErr("rgEmailGrp","rgEmailErr", true); ok=false; }
+  if (!isStrongPass(password)) { fieldErr("rgPassGrp","rgPassErr", true); ok=false; }
+  if (password !== confirm)  { fieldErr("rgConfGrp","rgConfErr",  true); ok=false; }
+  if (!ok) return;
+
+  setLoading("btnRegister","rgSpinner","rgBtnTxt", true, "Crear cuenta");
+
+  const attributes = [
+    new AmazonCognitoIdentity.CognitoUserAttribute({ Name:"email", Value:email }),
+    new AmazonCognitoIdentity.CognitoUserAttribute({ Name:"name",  Value:name  }),
+  ];
+
+  userPool.signUp(email, password, attributes, null, (err, result) => {
+    setLoading("btnRegister","rgSpinner","rgBtnTxt", false, "Crear cuenta");
+
+    if (err) {
+      const msgs = {
+        "UsernameExistsException":      "Ya existe una cuenta con ese correo.",
+        "InvalidPasswordException":     "La contraseña no cumple los requisitos de seguridad.",
+        "InvalidParameterException":    "Datos inválidos. Revisa el formulario.",
+        "TooManyRequestsException":     "Demasiadas solicitudes. Espera un momento.",
+      };
+      showAlert(msgs[err.code] || err.message || "Error al crear la cuenta.", "error");
+      return;
+    }
+
+    // Guardar usuario pendiente de verificación
+    pendingUser = result.user;
+    document.getElementById("verifyEmail").textContent = email;
+    showAlert("Cuenta creada. Revisa tu correo para verificarla.", "success");
+    setTimeout(() => showView("verify"), 1200);
+  });
+}
+
+/* ══════════════════════════════════════════════
+   INPUTS DEL CÓDIGO (6 dígitos)
+══════════════════════════════════════════════ */
+function codeInput(i) {
+  const val = document.getElementById("c" + i).value;
+  if (val && i < 5) document.getElementById("c" + (i+1)).focus();
+  // Auto-verificar si los 6 dígitos están completos
+  const code = getCode();
+  if (code.length === 6) handleVerify();
+}
+function codeBack(e, i) {
+  if (e.key === "Backspace" && !document.getElementById("c"+i).value && i > 0) {
+    document.getElementById("c"+(i-1)).focus();
+  }
+}
+function getCode() {
+  return [0,1,2,3,4,5].map(i => document.getElementById("c"+i).value).join("");
+}
+
+/* ══════════════════════════════════════════════
+   VERIFICAR EMAIL
+══════════════════════════════════════════════ */
+function handleVerify() {
+  const code = getCode();
+  if (code.length < 6) { showAlert("Ingresa el código completo de 6 dígitos.", "error"); return; }
+  if (!pendingUser)    { showAlert("Sesión expirada. Intenta registrarte de nuevo.", "error"); return; }
+
+  setLoading("btnVerify","vfSpinner","vfBtnTxt", true, "Verificar cuenta");
+
+  pendingUser.confirmRegistration(code, true, (err) => {
+    setLoading("btnVerify","vfSpinner","vfBtnTxt", false, "Verificar cuenta");
+
+    if (err) {
+      const msgs = {
+        "CodeMismatchException":   "Código incorrecto. Revisa tu correo.",
+        "ExpiredCodeException":    "El código expiró. Solicita uno nuevo.",
+        "NotAuthorizedException":  "La cuenta ya fue verificada.",
+      };
+      showAlert(msgs[err.code] || err.message, "error");
+      return;
+    }
+
+    showAlert("¡Cuenta verificada! Ya puedes iniciar sesión.", "success");
+    pendingUser = null;
+    setTimeout(() => showView("login"), 1500);
+  });
+}
+
+/* ══════════════════════════════════════════════
+   REENVIAR CÓDIGO
+══════════════════════════════════════════════ */
+function resendCode() {
+  if (!pendingUser) { showAlert("Sesión expirada.", "error"); return; }
+  pendingUser.resendConfirmationCode((err) => {
+    if (err) { showAlert("Error al reenviar. Intenta de nuevo.", "error"); return; }
+    showAlert("Código reenviado. Revisa tu correo.", "success");
+  });
+}
+
+/* ══════════════════════════════════════════════
+   RECUPERAR CONTRASEÑA
+══════════════════════════════════════════════ */
+function handleForgot() {
+  const email = document.getElementById("fpEmail").value.trim();
+  if (!isEmail(email)) { showAlert("Ingresa un correo válido.", "error"); return; }
+
+  forgotEmail = email;
+  document.getElementById("fpSpinner").style.display = "inline-block";
+  document.getElementById("fpBtnTxt").textContent = "Enviando…";
+
+  const cognitoUser = new AmazonCognitoIdentity.CognitoUser({
+    Username: email, Pool: userPool,
+  });
+
+  cognitoUser.forgotPassword({
+    onSuccess() {
+      document.getElementById("fpSpinner").style.display = "none";
+      document.getElementById("fpBtnTxt").textContent = "Enviar código";
+      showAlert("Código enviado a " + email + ". Revisa tu bandeja.", "success");
+      pendingUser = cognitoUser;
+      setTimeout(() => showView("newPass"), 1200);
+    },
+    onFailure(err) {
+      document.getElementById("fpSpinner").style.display = "none";
+      document.getElementById("fpBtnTxt").textContent = "Enviar código";
+      showAlert(err.message || "Error al enviar el código.", "error");
+    },
+  });
+}
+
+/* ══════════════════════════════════════════════
+   NUEVA CONTRASEÑA
+══════════════════════════════════════════════ */
+function handleNewPassword() {
+  const code = document.getElementById("npCode").value.trim();
+  const pass = document.getElementById("npPass").value;
+
+  if (!code || code.length < 6) { showAlert("Ingresa el código de 6 dígitos.", "error"); return; }
+  if (!isStrongPass(pass))      { showAlert("La contraseña no cumple los requisitos.", "error"); return; }
+  if (!pendingUser)             { showAlert("Sesión expirada. Solicita el código de nuevo.", "error"); return; }
+
+  setLoading("btnVerify","npSpinner","npBtnTxt", true, "Cambiar contraseña");
+
+  pendingUser.confirmPassword(code, pass, {
+    onSuccess() {
+      setLoading("btnVerify","npSpinner","npBtnTxt", false, "Cambiar contraseña");
+      showAlert("¡Contraseña actualizada! Ya puedes iniciar sesión.", "success");
+      pendingUser = null;
+      setTimeout(() => showView("login"), 1500);
+    },
+    onFailure(err) {
+      setLoading("btnVerify","npSpinner","npBtnTxt", false, "Cambiar contraseña");
+      showAlert(err.message || "Error al cambiar la contraseña.", "error");
+    },
+  });
+}
+
+/* ══════════════════════════════════════════════
+   AUTO-REDIRECT si ya hay sesión activa
+══════════════════════════════════════════════ */
+(function checkSession() {
+  const token = localStorage.getItem("cb_access") || sessionStorage.getItem("cb_access");
+  const exp   = parseInt(localStorage.getItem("cb_exp") || sessionStorage.getItem("cb_exp") || "0");
+  if (token && Date.now() < exp) window.location.href = "dashboard.html";
+})();
+</script>
+</body>
+</html>
